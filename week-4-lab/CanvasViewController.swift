@@ -8,15 +8,9 @@
 
 import UIKit
 
-extension NSLayoutFormatOptions {
-    static var None: NSLayoutFormatOptions {
-        return NSLayoutFormatOptions(rawValue: 0)
-    }
-}
-
 class Vfl {
     class func make(vfl: String, views: Dictionary<String, UIView>) -> [NSLayoutConstraint] {
-        return NSLayoutConstraint.constraintsWithVisualFormat(vfl, options: .None, metrics: nil, views: views)
+        return NSLayoutConstraint.constraintsWithVisualFormat(vfl, options: [], metrics: nil, views: views)
     }
 }
 
@@ -142,20 +136,22 @@ class CanvasViewController: UIViewController {
         case .Began:
             trayCenter = trayView.center
         case .Changed:
-            let pos = sender.translationInView(view)
+            let L = sender.locationInView(view)
+            let T = sender.translationInView(view)
 
-            var y = trayCenter.y + pos.y
-            if y < 493 {
-                if trayCenter.y > view.bounds.height {
-                    trayCenter = trayView.center
-                }
-                y = trayCenter.y + (pos.y / 493) * 34
-            }
+            let trayY = trayCenter.y + T.y
+            
+            let trayBoundary = view.bounds.height - (trayView.bounds.height - 34)
+            let trayTop = trayY - (trayView.bounds.height / 2)
+            
+            let flexY = trayBoundary + (trayView.bounds.height / 2) - ((1 - min(max(0, L.y / trayBoundary), 1)) * 34)
 
-            trayView.center.y = y
+            trayView.center.y = trayTop < trayBoundary
+                ? flexY
+                : trayY
         case .Ended:
-            let vel = sender.velocityInView(view)
-            (vel.y > 0) ? close(vel.y / trayView.bounds.height) : open(vel.y / trayView.bounds.height)
+            let V = sender.velocityInView(view)
+            (V.y > 0) ? close(V.y / trayView.bounds.height) : open(V.y / trayView.bounds.height)
         default:
             break
         }
