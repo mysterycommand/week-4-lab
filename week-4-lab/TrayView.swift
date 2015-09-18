@@ -27,13 +27,15 @@ class TrayView: UIView {
     let happyImageView = UIImageView(image: UIImage(named: "Happy"))
     let tongueImageView = UIImageView(image: UIImage(named: "Tongue"))
     
-    var panGestureRecognizer: UIPanGestureRecognizer!
-    
     var trayCenter = CGPoint(x: 0, y: 0)
-    
+
     var closeImmediate: (() -> ())!
     var openImmediate: (() -> ())!
+
     
+    var viewCenter: CGPoint!
+    var face: UIImageView!
+
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
@@ -55,16 +57,15 @@ class TrayView: UIView {
             }
         }
         
-        downArrowImageView.transform = CGAffineTransformMakeRotation(CGFloat(M_PI))
-        
-        panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "onPanGesture:")
+        let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "onPanGesture:")
         addGestureRecognizer(panGestureRecognizer)
+
+        downArrowImageView.transform = CGAffineTransformMakeRotation(CGFloat(M_PI))
+        setup()
     }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        
-        let subviews = [
+    func setup() {
+        let allSubviews = [
             "down": downArrowImageView,
             "dead": deadImageView,
             "exci": excitedImageView,
@@ -74,39 +75,34 @@ class TrayView: UIView {
             "tong": tongueImageView,
         ]
         
-        for (_, subview) in subviews {
+        for (_, subview) in allSubviews {
             subview.frame = CGRect(x: 0, y: 0, width: 50, height: 50)
             subview.translatesAutoresizingMaskIntoConstraints = false
+            subview.userInteractionEnabled = true
             addSubview(subview)
         }
         
-        let centeredSubviews = [
+        addConstraints(Vfl.make("H:|-(>=1)-[down(==20)]-(>=1)-|", views: allSubviews))
+        addConstraints(Vfl.make("H:|-20-[dead]-(>=1)-[exci]-(>=1)-[sadI]-20-|", views: allSubviews))
+        addConstraints(Vfl.make("H:|-20-[wink]-(>=1)-[happ]-(>=1)-[tong]-20-|", views: allSubviews))
+        addConstraints(Vfl.make("V:|-12-[down(==14)]", views: allSubviews))
+        addConstraints(Vfl.make("V:[down]-12-[dead]-[wink]-52-|", views: allSubviews))
+        addConstraints(Vfl.make("V:[down]-12-[exci]-[happ]-52-|", views: allSubviews))
+        addConstraints(Vfl.make("V:[down]-12-[sadI]-[tong]-52-|", views: allSubviews))
+        
+        centerSubviews([
             downArrowImageView,
             excitedImageView,
             happyImageView,
-        ]
-        
-        for centeredSubview in centeredSubviews {
-            let centerConstraint = NSLayoutConstraint(
-                item: centeredSubview,
-                attribute: NSLayoutAttribute.CenterX,
-                relatedBy: NSLayoutRelation.Equal,
-                toItem: self,
-                attribute: NSLayoutAttribute.CenterX,
-                multiplier: 1.0,
-                constant: 0.0
-            )
-            
-            addConstraint(centerConstraint)
-        }
-        
-        addConstraints(Vfl.make("H:|-(>=1)-[down(==20)]-(>=1)-|", views: subviews))
-        addConstraints(Vfl.make("H:|-20-[dead]-(>=1)-[exci]-(>=1)-[sadI]-20-|", views: subviews))
-        addConstraints(Vfl.make("H:|-20-[wink]-(>=1)-[happ]-(>=1)-[tong]-20-|", views: subviews))
-        addConstraints(Vfl.make("V:|-12-[down(==14)]", views: subviews))
-        addConstraints(Vfl.make("V:[down]-12-[dead]-[wink]-52-|", views: subviews))
-        addConstraints(Vfl.make("V:[down]-12-[exci]-[happ]-52-|", views: subviews))
-        addConstraints(Vfl.make("V:[down]-12-[sadI]-[tong]-52-|", views: subviews))
+        ])
+        panSubviews([
+            deadImageView,
+            excitedImageView,
+            sadImageView,
+            winkImageView,
+            happyImageView,
+            tongueImageView,
+        ])
     }
     
     func onPanGesture(sender: UIPanGestureRecognizer) {
@@ -159,6 +155,51 @@ class TrayView: UIView {
             animations: animations,
             completion: nil
         )
+    }
+    
+    func centerSubviews(centeredSubviews: [UIView]) {
+        for subview in centeredSubviews {
+            let centerConstraint = NSLayoutConstraint(
+                item: subview,
+                attribute: NSLayoutAttribute.CenterX,
+                relatedBy: NSLayoutRelation.Equal,
+                toItem: self,
+                attribute: NSLayoutAttribute.CenterX,
+                multiplier: 1.0,
+                constant: 0.0
+            )
+            
+            addConstraint(centerConstraint)
+        }
+    }
+    
+    func panSubviews(pannedSubviews: [UIImageView]) {
+        for subview in pannedSubviews {
+            let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "onPanGestureSubview:")
+            subview.addGestureRecognizer(panGestureRecognizer)
+        }
+    }
+    
+    func onPanGestureSubview(sender: UIPanGestureRecognizer) {
+        switch sender.state {
+        case .Began:
+            if let view = sender.view as? UIImageView {
+                viewCenter = view.center
+                viewCenter.y += self.frame.origin.y
+
+                face = UIImageView(image: view.image)
+                face.center = viewCenter
+                
+                superview?.addSubview(face)
+                close(1.0)
+            }
+        case .Changed:
+            let T = sender.translationInView(superview)
+            face.center.x = viewCenter.x + T.x
+            face.center.y = viewCenter.y + T.y
+        default:
+            break
+        }
     }
 
 }
