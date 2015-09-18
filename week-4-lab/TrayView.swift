@@ -100,6 +100,7 @@ class TrayView: UIView {
     
     // MARK: - Gestures
     func setupGestures() {
+        userInteractionEnabled = true
         let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "onPanGestureTray:")
         addGestureRecognizer(panGestureRecognizer)
         
@@ -193,12 +194,15 @@ class TrayView: UIView {
                 face.center = faceCenter
                 
                 superview?.addSubview(face)
+                face.liftFace()
                 closeTray(1.0)
             }
         case .Changed:
             let T = sender.translationInView(superview)
             face.center.x = faceCenter.x + T.x
             face.center.y = faceCenter.y + T.y
+        case .Ended:
+            face.dropFace()
         default:
             break
         }
