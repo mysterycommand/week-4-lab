@@ -37,6 +37,9 @@ class CanvasViewController: UIViewController {
     
     var trayCenter = CGPoint(x: 0, y: 0)
 
+    var closeImmediate: (() -> ())!
+    var openImmediate: (() -> ())!
+
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
@@ -56,9 +59,28 @@ class CanvasViewController: UIViewController {
         initTrayView()
         view.addSubview(trayView)
         
+        closeImmediate = { () -> () in
+            self.trayView.center.y = self.view.bounds.height + self.trayView.bounds.height / 2 - 34
+            self.downArrowImageView.transform = CGAffineTransformMakeRotation(CGFloat(M_PI))
+        }
+        
+        openImmediate = { () -> () in
+            self.trayView.center.y = self.view.bounds.height - self.trayView.bounds.height / 2 + 34
+            self.downArrowImageView.transform = CGAffineTransformIdentity
+        }
+
         let views = ["tray": trayView]
         view.addConstraints(Vfl.make("H:|[tray]|", views: views))
-        view.addConstraints(Vfl.make("V:[tray]|", views: views))
+        view.addConstraint(NSLayoutConstraint(
+            item: trayView,
+            attribute: .Top,
+            relatedBy: .Equal,
+            toItem: view,
+            attribute: .Bottom,
+            multiplier: 1.0,
+            constant: -34.0
+        ))
+        self.downArrowImageView.transform = CGAffineTransformMakeRotation(CGFloat(M_PI))
         
         panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "onPanGesture:")
         trayView.addGestureRecognizer(panGestureRecognizer)
@@ -106,26 +128,65 @@ class CanvasViewController: UIViewController {
             trayView.addConstraint(centerConstraint)
         }
         
-        trayView.addConstraints(Vfl.make("H:|-(>=1)-[down]-(>=1)-|", views: subviews))
-        trayView.addConstraints(Vfl.make("H:|-[dead]-(>=1)-[exci]-(>=1)-[sadI]-|", views: subviews))
-        trayView.addConstraints(Vfl.make("H:|-[wink]-(>=1)-[happ]-(>=1)-[tong]-|", views: subviews))
-        trayView.addConstraints(Vfl.make("V:|-[down]", views: subviews))
-        trayView.addConstraints(Vfl.make("V:[down]-[dead]-[wink]-|", views: subviews))
-        trayView.addConstraints(Vfl.make("V:[down]-[exci]-[happ]-|", views: subviews))
-        trayView.addConstraints(Vfl.make("V:[down]-[sadI]-[tong]-|", views: subviews))
+        trayView.addConstraints(Vfl.make("H:|-(>=1)-[down(==20)]-(>=1)-|", views: subviews))
+        trayView.addConstraints(Vfl.make("H:|-20-[dead]-(>=1)-[exci]-(>=1)-[sadI]-20-|", views: subviews))
+        trayView.addConstraints(Vfl.make("H:|-20-[wink]-(>=1)-[happ]-(>=1)-[tong]-20-|", views: subviews))
+        trayView.addConstraints(Vfl.make("V:|-12-[down(==14)]", views: subviews))
+        trayView.addConstraints(Vfl.make("V:[down]-12-[dead]-[wink]-52-|", views: subviews))
+        trayView.addConstraints(Vfl.make("V:[down]-12-[exci]-[happ]-52-|", views: subviews))
+        trayView.addConstraints(Vfl.make("V:[down]-12-[sadI]-[tong]-52-|", views: subviews))
     }
     
     func onPanGesture(sender: UIPanGestureRecognizer) {
-        let center = sender.translationInView(view)
-
         switch sender.state {
         case .Began:
             trayCenter = trayView.center
         case .Changed:
-            trayView.center.y = trayCenter.y + center.y
+            let pos = sender.translationInView(view)
+
+            var y = trayCenter.y + pos.y
+            if y < 493 {
+                if trayCenter.y > view.bounds.height {
+                    trayCenter = trayView.center
+                }
+                y = trayCenter.y + (pos.y / 493) * 34
+            }
+
+            trayView.center.y = y
+        case .Ended:
+            let vel = sender.velocityInView(view)
+            (vel.y > 0) ? close(vel.y / trayView.bounds.height) : open(vel.y / trayView.bounds.height)
         default:
             break
         }
+    }
+    
+    func close(vel: CGFloat) {
+        let animations = closeImmediate
+
+        UIView.animateWithDuration(
+            0.35,
+            delay: 0.0,
+            usingSpringWithDamping: 0.8,
+            initialSpringVelocity: vel,
+            options: .CurveEaseInOut,
+            animations: animations,
+            completion: nil
+        )
+    }
+    
+    func open(vel: CGFloat) {
+        let animations = openImmediate
+        
+        UIView.animateWithDuration(
+            0.35,
+            delay: 0.0,
+            usingSpringWithDamping: 0.8,
+            initialSpringVelocity: vel,
+            options: .CurveEaseInOut,
+            animations: animations,
+            completion: nil
+        )
     }
 
 }
