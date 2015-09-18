@@ -28,13 +28,9 @@ class TrayView: UIView {
     let tongueImageView = UIImageView(image: UIImage(named: "Tongue"))
     
     var trayCenter = CGPoint(x: 0, y: 0)
-
-    var closeImmediate: (() -> ())!
-    var openImmediate: (() -> ())!
-
     
-    var viewCenter: CGPoint!
-    var face: UIImageView!
+    var faceCenter: CGPoint!
+    var face: FaceView!
 
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -42,29 +38,18 @@ class TrayView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
-        closeImmediate = { () -> () in
-            if let superview = self.superview {
-                self.center.y = superview.bounds.height + self.bounds.height / 2 - 34
-                self.downArrowImageView.transform = CGAffineTransformMakeRotation(CGFloat(M_PI))
-            }
-        }
-        
-        openImmediate = { () -> () in
-            if let superview = self.superview {
-                self.center.y = superview.bounds.height - self.bounds.height / 2 + 34
-                self.downArrowImageView.transform = CGAffineTransformIdentity
-            }
-        }
-        
-        let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "onPanGesture:")
-        addGestureRecognizer(panGestureRecognizer)
-
-        downArrowImageView.transform = CGAffineTransformMakeRotation(CGFloat(M_PI))
         setup()
     }
     
     func setup() {
+        setupConstraints()
+        setupGestures()
+    }
+    
+    // MARK: - Constraints
+    func setupConstraints() {
+        downArrowImageView.transform = CGAffineTransformMakeRotation(CGFloat(M_PI))
+
         let allSubviews = [
             "down": downArrowImageView,
             "dead": deadImageView,
@@ -95,66 +80,6 @@ class TrayView: UIView {
             excitedImageView,
             happyImageView,
         ])
-        panSubviews([
-            deadImageView,
-            excitedImageView,
-            sadImageView,
-            winkImageView,
-            happyImageView,
-            tongueImageView,
-        ])
-    }
-    
-    func onPanGesture(sender: UIPanGestureRecognizer) {
-        switch sender.state {
-        case .Began:
-            trayCenter = self.center
-        case .Changed:
-            let L = sender.locationInView(superview)
-            let T = sender.translationInView(superview)
-            
-            let trayY = trayCenter.y + T.y
-            
-            let trayBoundary = superview!.bounds.height - (bounds.height - 34)
-            let trayTop = trayY - (bounds.height / 2)
-            
-            let flexY = trayBoundary + (bounds.height / 2) - ((1 - min(max(0, L.y / trayBoundary), 1)) * 34)
-            
-            center.y = trayTop < trayBoundary ? flexY : trayY
-        case .Ended:
-            let V = sender.velocityInView(superview)
-            (V.y > 0) ? close(V.y / bounds.height) : open(V.y / bounds.height)
-        default:
-            break
-        }
-    }
-    
-    func close(vel: CGFloat) {
-        let animations = closeImmediate
-        
-        UIView.animateWithDuration(
-            0.35,
-            delay: 0.0,
-            usingSpringWithDamping: 0.8,
-            initialSpringVelocity: vel,
-            options: .CurveEaseInOut,
-            animations: animations,
-            completion: nil
-        )
-    }
-    
-    func open(vel: CGFloat) {
-        let animations = openImmediate
-        
-        UIView.animateWithDuration(
-            0.35,
-            delay: 0.0,
-            usingSpringWithDamping: 0.8,
-            initialSpringVelocity: vel,
-            options: .CurveEaseInOut,
-            animations: animations,
-            completion: nil
-        )
     }
     
     func centerSubviews(centeredSubviews: [UIView]) {
@@ -173,30 +98,107 @@ class TrayView: UIView {
         }
     }
     
+    // MARK: - Gestures
+    func setupGestures() {
+        let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "onPanGestureTray:")
+        addGestureRecognizer(panGestureRecognizer)
+        
+        panSubviews([
+            deadImageView,
+            excitedImageView,
+            sadImageView,
+            winkImageView,
+            happyImageView,
+            tongueImageView,
+        ])
+    }
+    
     func panSubviews(pannedSubviews: [UIImageView]) {
         for subview in pannedSubviews {
-            let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "onPanGestureSubview:")
+            let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "onPanGestureFace:")
             subview.addGestureRecognizer(panGestureRecognizer)
         }
     }
     
-    func onPanGestureSubview(sender: UIPanGestureRecognizer) {
+    func onPanGestureTray(sender: UIPanGestureRecognizer) {
+        switch sender.state {
+        case .Began:
+            trayCenter = self.center
+        case .Changed:
+            let L = sender.locationInView(superview)
+            let T = sender.translationInView(superview)
+            
+            let trayY = trayCenter.y + T.y
+            
+            let trayBoundary = superview!.bounds.height - (bounds.height - 34)
+            let trayTop = trayY - (bounds.height / 2)
+            
+            let flexY = trayBoundary + (bounds.height / 2) - ((1 - min(max(0, L.y / trayBoundary), 1)) * 34)
+            
+            center.y = trayTop < trayBoundary ? flexY : trayY
+        case .Ended:
+            let V = sender.velocityInView(superview)
+            (V.y > 0) ? closeTray(V.y / bounds.height) : openTray(V.y / bounds.height)
+        default:
+            break
+        }
+    }
+    
+    func closeTray(vel: CGFloat) {
+        let animations = { () -> () in
+            if let superview = self.superview {
+                self.center.y = superview.bounds.height + self.bounds.height / 2 - 34
+                self.downArrowImageView.transform = CGAffineTransformMakeRotation(CGFloat(M_PI))
+            }
+        }
+        
+        UIView.animateWithDuration(
+            0.35,
+            delay: 0.0,
+            usingSpringWithDamping: 0.8,
+            initialSpringVelocity: vel,
+            options: .CurveEaseInOut,
+            animations: animations,
+            completion: nil
+        )
+    }
+    
+    func openTray(vel: CGFloat) {
+        let animations = { () -> () in
+            if let superview = self.superview {
+                self.center.y = superview.bounds.height - self.bounds.height / 2 + 34
+                self.downArrowImageView.transform = CGAffineTransformIdentity
+            }
+        }
+        
+        UIView.animateWithDuration(
+            0.35,
+            delay: 0.0,
+            usingSpringWithDamping: 0.8,
+            initialSpringVelocity: vel,
+            options: .CurveEaseInOut,
+            animations: animations,
+            completion: nil
+        )
+    }
+    
+    func onPanGestureFace(sender: UIPanGestureRecognizer) {
         switch sender.state {
         case .Began:
             if let view = sender.view as? UIImageView {
-                viewCenter = view.center
-                viewCenter.y += self.frame.origin.y
+                faceCenter = view.center
+                faceCenter.y += self.frame.origin.y
 
-                face = UIImageView(image: view.image)
-                face.center = viewCenter
+                face = FaceView(image: view.image)
+                face.center = faceCenter
                 
                 superview?.addSubview(face)
-                close(1.0)
+                closeTray(1.0)
             }
         case .Changed:
             let T = sender.translationInView(superview)
-            face.center.x = viewCenter.x + T.x
-            face.center.y = viewCenter.y + T.y
+            face.center.x = faceCenter.x + T.x
+            face.center.y = faceCenter.y + T.y
         default:
             break
         }

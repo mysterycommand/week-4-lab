@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		844002BD1BAC94FD00222549 /* TrayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844002BC1BAC94FD00222549 /* TrayView.swift */; settings = {ASSET_TAGS = (); }; };
 		844002C01BAC974100222549 /* Vfl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844002BF1BAC974100222549 /* Vfl.swift */; settings = {ASSET_TAGS = (); }; };
+		844002C21BACC83F00222549 /* FaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844002C11BACC83F00222549 /* FaceView.swift */; settings = {ASSET_TAGS = (); }; };
 		84A694991BAA30C4001E38BE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A694981BAA30C4001E38BE /* AppDelegate.swift */; };
 		84A6949B1BAA30C4001E38BE /* CanvasViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A6949A1BAA30C4001E38BE /* CanvasViewController.swift */; };
 		84A694A01BAA30C4001E38BE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84A6949F1BAA30C4001E38BE /* Assets.xcassets */; };
@@ -37,6 +38,7 @@
 /* Begin PBXFileReference section */
 		844002BC1BAC94FD00222549 /* TrayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TrayView.swift; sourceTree = "<group>"; };
 		844002BF1BAC974100222549 /* Vfl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Vfl.swift; sourceTree = "<group>"; };
+		844002C11BACC83F00222549 /* FaceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceView.swift; sourceTree = "<group>"; };
 		84A694951BAA30C4001E38BE /* week-4-lab.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "week-4-lab.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		84A694981BAA30C4001E38BE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		84A6949A1BAA30C4001E38BE /* CanvasViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasViewController.swift; sourceTree = "<group>"; };
@@ -80,6 +82,7 @@
 			isa = PBXGroup;
 			children = (
 				844002BC1BAC94FD00222549 /* TrayView.swift */,
+				844002C11BACC83F00222549 /* FaceView.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -277,6 +280,7 @@
 				84A6949B1BAA30C4001E38BE /* CanvasViewController.swift in Sources */,
 				84A694991BAA30C4001E38BE /* AppDelegate.swift in Sources */,
 				844002BD1BAC94FD00222549 /* TrayView.swift in Sources */,
+				844002C21BACC83F00222549 /* FaceView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
