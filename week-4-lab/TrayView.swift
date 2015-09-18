@@ -100,8 +100,9 @@ class TrayView: UIView {
     
     // MARK: - Gestures
     func setupGestures() {
-        userInteractionEnabled = true
         let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "onPanGestureTray:")
+
+        userInteractionEnabled = true
         addGestureRecognizer(panGestureRecognizer)
         
         panSubviews([

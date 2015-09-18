@@ -19,6 +19,7 @@ class FaceView: UIImageView {
     */
     
     var faceCenter: CGPoint!
+    var faceTransform = CGAffineTransformIdentity
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -31,7 +32,6 @@ class FaceView: UIImageView {
     
     override init(image: UIImage?) {
         super.init(image: image)
-        print("init")
         setup()
     }
     
@@ -41,15 +41,16 @@ class FaceView: UIImageView {
     }
     
     func setup() {
-        print("setup")
         setupGestures()
     }
     
     func setupGestures() {
-        print("setupGestures")
-        userInteractionEnabled = true
         let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "onPanGesture:")
+        let pinchGestureRecognizer = UIPinchGestureRecognizer(target: self, action: "onPinchGesture:")
+
+        userInteractionEnabled = true
         addGestureRecognizer(panGestureRecognizer)
+        addGestureRecognizer(pinchGestureRecognizer)
     }
     
     func onPanGesture(sender: UIPanGestureRecognizer) {
@@ -68,9 +69,14 @@ class FaceView: UIImageView {
         }
     }
     
+    func onPinchGesture(sender: UIPinchGestureRecognizer) {
+        faceTransform = CGAffineTransformMakeScale(sender.scale, sender.scale)
+        transform = faceTransform
+    }
+    
     func liftFace() {
         let animations = { () -> () in
-            self.transform = CGAffineTransformMakeScale(2.0, 2.0)
+            self.transform = CGAffineTransformScale(self.transform, 1.5, 1.5)
         }
         
         UIView.animateWithDuration(
@@ -86,7 +92,7 @@ class FaceView: UIImageView {
     
     func dropFace() {
         let animations = { () -> () in
-            self.transform = CGAffineTransformMakeScale(1.0, 1.0)
+            self.transform = self.faceTransform
         }
         
         UIView.animateWithDuration(
