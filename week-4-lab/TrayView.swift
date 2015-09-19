@@ -28,6 +28,7 @@ class TrayView: UIView {
     let tongueImageView = UIImageView(image: UIImage(named: "Tongue"))
     
     var trayCenter = CGPoint(x: 0, y: 0)
+    var trayIsOpen = false
     
     var faceCenter: CGPoint!
     var face: FaceView!
@@ -101,9 +102,13 @@ class TrayView: UIView {
     // MARK: - Gestures
     func setupGestures() {
         let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "onPanGestureTray:")
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: "onTapGestureTray:")
+        tapGestureRecognizer.numberOfTapsRequired = 1
 
         userInteractionEnabled = true
+
         addGestureRecognizer(panGestureRecognizer)
+        addGestureRecognizer(tapGestureRecognizer)
         
         panSubviews([
             deadImageView,
@@ -146,12 +151,20 @@ class TrayView: UIView {
         }
     }
     
+    func onTapGestureTray(sender: UITapGestureRecognizer) {
+        trayIsOpen ? closeTray(1.0) : openTray(0.0)
+    }
+    
     func closeTray(vel: CGFloat) {
         let animations = { () -> () in
             if let superview = self.superview {
                 self.center.y = superview.bounds.height + self.bounds.height / 2 - 34
                 self.downArrowImageView.transform = CGAffineTransformMakeRotation(CGFloat(M_PI))
             }
+        }
+        
+        let completion = { (didComplete: Bool) -> Void in
+            self.trayIsOpen = false
         }
         
         UIView.animateWithDuration(
@@ -161,7 +174,7 @@ class TrayView: UIView {
             initialSpringVelocity: vel,
             options: .CurveEaseInOut,
             animations: animations,
-            completion: nil
+            completion: completion
         )
     }
     
@@ -173,6 +186,10 @@ class TrayView: UIView {
             }
         }
         
+        let completion = { (didComplete: Bool) -> Void in
+            self.trayIsOpen = true
+        }
+        
         UIView.animateWithDuration(
             0.35,
             delay: 0.0,
@@ -180,7 +197,7 @@ class TrayView: UIView {
             initialSpringVelocity: vel,
             options: .CurveEaseInOut,
             animations: animations,
-            completion: nil
+            completion: completion
         )
     }
     

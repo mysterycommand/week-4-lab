@@ -8,7 +8,7 @@
 
 import UIKit
 
-class FaceView: UIImageView {
+class FaceView: UIImageView, UIGestureRecognizerDelegate {
 
     /*
     // Only override drawRect: if you perform custom drawing.
@@ -44,13 +44,21 @@ class FaceView: UIImageView {
         setupGestures()
     }
     
+    // MARK: - Gestures
     func setupGestures() {
         let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "onPanGesture:")
         let pinchGestureRecognizer = UIPinchGestureRecognizer(target: self, action: "onPinchGesture:")
+        let rotationGestureRecognizer = UIRotationGestureRecognizer(target: self, action: "onRotationGesture:")
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: "onTapGesture:")
+        tapGestureRecognizer.numberOfTapsRequired = 2
 
+        rotationGestureRecognizer.delegate = self
         userInteractionEnabled = true
+
         addGestureRecognizer(panGestureRecognizer)
         addGestureRecognizer(pinchGestureRecognizer)
+        addGestureRecognizer(rotationGestureRecognizer)
+        addGestureRecognizer(tapGestureRecognizer)
     }
     
     func onPanGesture(sender: UIPanGestureRecognizer) {
@@ -70,13 +78,24 @@ class FaceView: UIImageView {
     }
     
     func onPinchGesture(sender: UIPinchGestureRecognizer) {
-        faceTransform = CGAffineTransformMakeScale(sender.scale, sender.scale)
+        faceTransform = CGAffineTransformScale(faceTransform, sender.scale, sender.scale)
+        sender.scale = 1.0
         transform = faceTransform
+    }
+    
+    func onRotationGesture(sender: UIRotationGestureRecognizer) {
+        faceTransform = CGAffineTransformRotate(faceTransform, sender.rotation)
+        sender.rotation = 0.0
+        transform = faceTransform
+    }
+    
+    func onTapGesture(sender: UITapGestureRecognizer) {
+        sender.view?.removeFromSuperview()
     }
     
     func liftFace() {
         let animations = { () -> () in
-            self.transform = CGAffineTransformScale(self.transform, 1.5, 1.5)
+            self.transform = CGAffineTransformScale(self.transform, 1.2, 1.2)
         }
         
         UIView.animateWithDuration(
@@ -104,6 +123,10 @@ class FaceView: UIImageView {
             animations: animations,
             completion: nil
         )
+    }
+    
+    func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWithGestureRecognizer otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
     }
 
 }
